@@ -8,7 +8,10 @@ struct Tensor4D {
     T *data;
 
     Tensor4D(unsigned int const shape_[4], T const *data_) {
-        unsigned int size = 1;
+        for (auto i = 0u; i < 4; ++i) {
+            shape[i] = shape_[i];
+        }
+        unsigned int size = shape[0] * shape[1] * shape[2] * shape[3] * sizeof(T);
         // TODO: 填入正确的 shape 并计算 size
         data = new T[size];
         std::memcpy(data, data_, size * sizeof(T));
@@ -28,6 +31,44 @@ struct Tensor4D {
     // 则 `this` 与 `others` 相加时，3 个形状为 `[1, 2, 1, 4]` 的子张量各自与 `others` 对应项相加。
     Tensor4D &operator+=(Tensor4D const &others) {
         // TODO: 实现单向广播的加法
+        bool broadcast[4];
+        for (auto i = 0u; i < 4; ++i) {
+            broadcast[i] = static_cast<bool>(shape[i] != others.shape[i]);
+            if (shape[i] != others.shape[i]) {
+                std::cout << "shape i = " << shape[i] << " others shape i = " << others.shape[i] << "\n";
+                ASSERT(others.shape[i] == 1, "!");
+            }
+        }
+
+        auto dst = this->data;
+        auto src = others.data;
+        T *marks[4]{src};
+
+        for (auto i0 = 0u; i0 < shape[0]; ++i0) {
+            if (broadcast[0]) {
+                src = marks[0];
+            }
+            marks[1] = src;
+            for (auto i1 = 0u; i1 < shape[1]; ++i1) {
+                if (broadcast[1]) {
+                    src = marks[1];
+                }
+                marks[2] = src;
+                for (auto i2 = 0u; i2 < shape[2]; ++i2) {
+                    if (broadcast[2]) {
+                        src = marks[2];
+                    }
+                    marks[3] = src;
+                    for (auto i3 = 0u; i3 < shape[3]; ++i3) {
+                        if (broadcast[3]) {
+                            src = marks[3];
+                        }
+                        std::cout << "*dst = " << *dst << " *src = " << *src << "\n";
+                        *dst++ += *src++;
+                    }
+                }
+            }
+        }
         return *this;
     }
 };
