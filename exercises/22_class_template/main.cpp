@@ -11,7 +11,7 @@ struct Tensor4D {
         for (auto i = 0u; i < 4; ++i) {
             shape[i] = shape_[i];
         }
-        unsigned int size = shape[0] * shape[1] * shape[2] * shape[3] * sizeof(T);
+        unsigned int size = shape[0] * shape[1] * shape[2] * shape[3];
         // TODO: 填入正确的 shape 并计算 size
         data = new T[size];
         std::memcpy(data, data_, size * sizeof(T));
